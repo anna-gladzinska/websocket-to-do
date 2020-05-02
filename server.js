@@ -4,13 +4,9 @@ const socket = require('socket.io');
 
 const app = express();
 
-const tasks = ['dupka'];
+const tasks = [];
 
 app.use(express.static(path.join(__dirname, '/client')));
-
-app.get('/test', (req, res) => {
-    res.json(tasks);
-});
 
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '/client/index.html'));
@@ -34,9 +30,11 @@ io.on('connection', socket => {
       tasks.push(task);
       socket.broadcast.emit('addTask', task);
     });
-    socket.on('removeTask', task => {
-      const index = tasks.findIndex(item => item.id == task.id)
-      tasks.splice(index, 1);
-      socket.broadcast.emit('removeTask', task);
-    });
+    socket.on('removeTask', id => {
+        const item = tasks.find(item => item.id == id);
+        const index = tasks.indexOf(item);
+        tasks.splice(index, 1);
+
+        socket.broadcast.emit('updateData', tasks);
+      });
   });
